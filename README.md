@@ -55,11 +55,11 @@ optional arguments:
 python ApacheSolrReadAnyFile_POC.py -f ./url1.txt -T 32
 ```
 
-![image-20210324110302152](E:\3.pythonProject\ApacheSolrReadAnyFile\ApacheSolrReadAnyFile\README.assets\image-20210324110302152.png)
+![image](README.assets/image-20210324110302152.png)
 
 700多个目标，使用32线程情况下2分钟即可扫完
 
-![image-20210324110917437](E:\3.pythonProject\ApacheSolrReadAnyFile\ApacheSolrReadAnyFile\README.assets\image-20210324110917437.png)
+![image](README.assets/image-20210324110917437.png)
 
 ## EXP
 
@@ -87,6 +87,6 @@ optional arguments:
 python ApacheSolrReadAnyFile_EXP.py -u 1*****3:8983
 ```
 
-![image-20210324111756267](E:\3.pythonProject\ApacheSolrReadAnyFile\ApacheSolrReadAnyFile\README.assets\image-20210324111756267.png)
+![image](README.assets/image-20210324111756267.png)
 
 也可输入目录，得到目录下所有文件。
