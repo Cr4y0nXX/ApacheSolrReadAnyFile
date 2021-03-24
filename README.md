@@ -4,15 +4,11 @@ Apache Solr <= 8.8.1 存在任意文件读取漏洞，可读取服务器任意�
 
 ## Environment
 
-------
-
 Python：>= Python 3.7
 
 OS：ALL
 
 ## Install
-
-------
 
 clone
 
@@ -23,8 +19,6 @@ git clone https://github.com/Cr4y0nXX/ApacheSolrReadAnyFile.git
 or download zip
 
 ## POC
-
-------
 
 ### 简述
 
@@ -62,8 +56,6 @@ python ApacheSolrReadAnyFile_POC.py -f ./url1.txt -T 32
 ![image](README.assets/image-20210324110917437.png)
 
 ## EXP
-
-------
 
 单线程的方式，每次对一个目标进行验证和利用，若存在漏洞可输入文件或路径得到结果。
 
