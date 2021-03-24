@@ -12,7 +12,7 @@ from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 from argparse import ArgumentParser
 
-class ApacheSolrReadAnyFile:
+class POC:
     def __init__(self):
         self.banner()
         self.args = self.parseArgs()
@@ -154,6 +154,6 @@ class ApacheSolrReadAnyFile:
             pass
 
 if __name__ == "__main__":
-    ApacheSolrReadAnyFile()
+    POC()
 
 
