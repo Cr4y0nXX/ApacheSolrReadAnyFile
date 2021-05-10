@@ -95,7 +95,7 @@ class ApacheSolrReadAnyFile:
                 finally:
                     self.lock.release()
             else:
-                msg = f"[-] {url} is safe"
+                msg = f"[-] [ Safe ]  {url}"
         self.lock.acquire()
         try:
             print(msg)
