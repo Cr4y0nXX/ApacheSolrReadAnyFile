@@ -53,7 +53,9 @@ python ApacheSolrReadAnyFile_POC.py -f ./url1.txt -T 32
 
 700多个目标，使用32线程情况下2分钟即可扫完
 
-![image](README.assets/image-20210324110917437.png)
+在优化后，只需要不到30秒即可扫完。
+
+![image](README.assets/2021-05-11_01-05-32.png)
 
 ## EXP
 
