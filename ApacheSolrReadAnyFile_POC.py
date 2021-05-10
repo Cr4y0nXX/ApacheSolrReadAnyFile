@@ -120,11 +120,14 @@ class ApacheSolrReadAnyFile:
     # 加载url地址
     def loadURL(self):
         urlList = []
-        with open(self.args.file) as f:
+        with open(self.args.file, encoding="utf8") as f:
             for line in f.readlines():
-                line = line.replace("http://", "") if "http://" in line else line
-                line = line.replace("https://", "") if "https://" in line else line
-                urlList.append(f"http://{line.strip()}")
+                line = line.strip()
+                if "https://" in line:
+                    line = line.replace("https://", "http://")
+                if "http://" not in line:
+                    line = f"http://{line}"
+                urlList.append(line)
         return urlList
 
     # 多线程运行
